@@ -1,0 +1,13 @@
+#dog {
+	float: right;
+	height: 100px;
+	padding: 5px 5px 5px 5px;
+}
+
+#bottomblock {
+	background: rgb(170, 97, 2);
+}
+
+p2:hover {
+	color: #ffc5ff;
+}
