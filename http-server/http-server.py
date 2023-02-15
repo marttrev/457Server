@@ -149,9 +149,9 @@ if __name__ == "__main__":
         portNum = input("Input port number: ")
         try:
             portNum = int(portNum)
-            if portNum > 0 and portNum < 65536:
+            if portNum > 1023 and portNum < 65536:
                 isValid = True
-            elif portNum <= 0:
+            elif portNum <= 1023:
                 print("Too low.")
                 isValid = False
             else:
