@@ -2,7 +2,6 @@ import socket
 import threading
 from datetime import datetime
 from time import mktime
-from wsgiref.handlers import format_date_time
 import io
 import os
 
@@ -42,20 +41,13 @@ class HttpServer:
                             fileType = self.__getFileType(getRequest)
                             
                             # Check if exists, if so, set filename and serve, if not 404.
-                            if fileType.__contains__("image"):
-                                if os.path.isfile("content/" + getRequest):
-                                    self.__serveItem("content/" + getRequest, fileType, connectionSocket)
-                                    return True
-                                else:
-                                    self.__fileNotExist(connectionSocket)
-                                    return False
+                            if os.path.isfile("content/" + getRequest):
+                                self.__serveItem("content/" + getRequest, fileType, connectionSocket)
+                                return True
                             else:
-                                if os.path.isfile("content/" + getRequest):
-                                    self.__serveItem("content/" + getRequest, fileType, connectionSocket)
-                                    return True
-                                else:
-                                    self.__fileNotExist(connectionSocket)
-                                    return False
+                                self.__fileNotExist(connectionSocket)
+                                return False
+
                             
                     else:
                         print("Not a GET request.")
@@ -67,7 +59,8 @@ class HttpServer:
         # Format date and time to proper format.
         time = datetime.now()
         timestamp = mktime(time.timetuple())
-        formattedDate = format_date_time(timestamp)
+        utcStamp = datetime.utcfromtimestamp(timestamp)
+        formattedDate = self.__formatDate(utcStamp)
         
         # Generate file
         responseFile = self.__generateFile("content/404.html", "text/html")
@@ -107,7 +100,8 @@ class HttpServer:
         # Format date and time to proper format.
         time = datetime.now()
         timestamp = mktime(time.timetuple())
-        formattedDate = format_date_time(timestamp)
+        utcStamp = datetime.utcfromtimestamp(timestamp)
+        formattedDate = self.__formatDate(utcStamp)
         
         # Write out header.
         response = "HTTP/1.0 200 OK\r\nConnection: close\r\nDate: " + formattedDate + "\r\nContent-Length: " + str(len(responseFile)) + "\r\nContent-Type: " + fileType + "\r\n\r\n"
@@ -134,6 +128,11 @@ class HttpServer:
         fileRaw.close()
         
         return responseFile
+        
+    def __formatDate(self, timestamp):
+        weekday = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][timestamp.weekday()]
+        month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][timestamp.month - 1]
+        return "%s, %02d %s %04d %02d:%02d:%02d GMT" % (weekday, timestamp.day, month, timestamp.year, timestamp.hour, timestamp.minute, timestamp.second)
 
     def __init__(self, server_port):
         self.server_ip = "localhost"
